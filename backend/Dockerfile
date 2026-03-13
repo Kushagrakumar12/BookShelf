@@ -1,5 +1,5 @@
 # Stage 1: Build dependencies
-FROM node:20-alpine AS deps
+FROM node:22-alpine AS deps
 
 WORKDIR /app
 
@@ -10,7 +10,7 @@ COPY package.json package-lock.json ./
 RUN npm ci --only=production
 
 # Stage 2: Production image
-FROM node:20-alpine
+FROM node:22-alpine
 
 # Create non-root user for security
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
