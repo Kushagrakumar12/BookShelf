@@ -7,7 +7,7 @@ A full-stack CRUD application for managing books, built with React, Express, and
 | Layer | Technology |
 |-------|-----------|
 | Frontend | React 19 · Vite 7 · TailwindCSS 4 · Axios · React Router 7 |
-| Backend | Node.js 20 · Express 5 · Mongoose 8 · Helmet · express-rate-limit |
+| Backend | Node.js 22 · Express 5 · Mongoose 8 · Helmet · express-rate-limit |
 | Database | MongoDB 7 |
 | Containerization | Docker · Docker Compose · Nginx (reverse proxy) |
 | Testing | Jest 30 · Supertest 7 |
@@ -71,8 +71,8 @@ A full-stack CRUD application for managing books, built with React, Express, and
 
 ```bash
 # Clone the repository
-git clone <repo-url>
-cd Book-Management-App
+git clone https://github.com/Kushagrakumar12/BookShelf.git
+cd BookShelf
 
 # Start everything
 docker compose up -d --build
@@ -279,8 +279,8 @@ Run `make help` to see all available commands:
 
 | Image | Base | Size | Description |
 |-------|------|------|-------------|
-| `book-management-app-backend` | `node:20-alpine` | 163 MB | Express API server |
-| `book-management-app-frontend` | `nginx:stable-alpine` | 62 MB | React SPA + Nginx proxy |
+| `book-management-app-backend` | `node:22-alpine` | 163 MB | Express API server |
+| `book-management-app-frontend` | `nginx:alpine` | 62 MB | React SPA + Nginx proxy |
 
 Both use **multi-stage builds** to minimize image size.
 
@@ -301,8 +301,8 @@ docker compose build
 Expected output — each service should print `=> exporting to image` and `=> writing image` with no errors:
 ```
 [+] Building 12.4s (22/22) FINISHED
- => [backend] FROM docker.io/library/node:20-alpine
- => [frontend] FROM docker.io/library/node:20-alpine AS build
+ => [backend] FROM docker.io/library/node:22-alpine
+ => [frontend] FROM docker.io/library/node:22-alpine AS build
  => [mongo] ...
 ```
 
@@ -380,7 +380,7 @@ Expected response (values will differ):
     "heapUsed": "18MB",
     "heapTotal": "23MB"
   },
-  "nodeVersion": "v20.20.1"
+  "nodeVersion": "v22.x.x"
 }
 ```
 
@@ -589,14 +589,8 @@ Both containers run as a dedicated non-root user (`appuser`) created inside the 
 This means even if an attacker exploits a vulnerability in the app, they cannot write to the container filesystem or escalate to root.
 
 ### Image Scanning
-Both Docker images are automatically scanned for known CVEs (Common Vulnerabilities and Exposures) on every push and pull request using **Trivy** — an open-source vulnerability scanner by Aqua Security.
+Both Docker images can be scanned locally for known CVEs using **Trivy** — an open-source vulnerability scanner by Aqua Security.
 
-The scan runs in the CI pipeline (`.github/workflows/ci.yml`) immediately after each image is built:
-- Scans for **CRITICAL** and **HIGH** severity vulnerabilities
-- Only reports vulnerabilities that have a **known fix available** (`ignore-unfixed: true`)
-- **Fails the CI build** if any fixable CRITICAL or HIGH vulnerabilities are found (`exit-code: 1`)
-
-To run a scan locally:
 ```bash
 # Install Trivy (macOS)
 brew install trivy
@@ -608,7 +602,7 @@ trivy image book-management-backend
 trivy image book-management-frontend
 ```
 
-Both images use `alpine`-based base images (`node:20-alpine`, `nginx:stable-alpine`) which have a minimal attack surface and a small number of installed packages, keeping the vulnerability count low.
+Both images use `alpine`-based base images (`node:22-alpine`, `nginx:alpine`) which have a minimal attack surface and a small number of installed packages, keeping the vulnerability count low.
 
 ### Securing Environment Variables
 Secrets are never baked into Docker images or committed to version control:
@@ -813,7 +807,7 @@ make logs-errors
   "uptime": "188s",
   "mongodb": { "status": "connected", "host": "mongo", "name": "books" },
   "memory": { "rss": "67MB", "heapUsed": "18MB", "heapTotal": "19MB" },
-  "nodeVersion": "v20.20.1"
+  "nodeVersion": "v22.x.x"
 }
 ```
 
