@@ -1,0 +1,19 @@
+# Scaling overrides for docker-compose.yml
+# Usage: docker compose -f docker-compose.yml -f docker-compose.scale.yml up -d
+#
+# Nginx load-balances backend replicas via Docker DNS round-robin.
+# Backend host port is removed so multiple replicas can coexist.
+# API is accessible only via the frontend nginx proxy (port 3000).
+
+services:
+  backend:
+    ports: !override []
+    deploy:
+      replicas: ${BACKEND_REPLICAS:-3}
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 256M
+        reservations:
+          cpus: "0.25"
+          memory: 128M

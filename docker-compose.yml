@@ -1,0 +1,77 @@
+services:
+  # MongoDB Database
+  mongo:
+    image: mongo:7
+    container_name: book-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017" 
+    volumes:
+      - mongo-data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=books
+    networks:
+      - backend-net
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # Backend API (Express)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: book-backend
+    restart: unless-stopped
+    ports:
+      - "5001:5001"
+    # Note: To scale backend, use docker-compose.scale.yml
+    # which adds replicas and resource limits. See: make scale-up
+    environment:
+      - PORT=5001
+      - NODE_ENV=production
+      - MONGO_URI=mongodb://mongo:27017/books
+      - CORS_ORIGIN=http://localhost:3000
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - backend-net
+      - frontend-net
+    read_only: true
+    tmpfs:
+      - /tmp
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:5001/api/health || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Frontend (React + Nginx)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: book-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - frontend-net
+
+networks:
+  backend-net:
+    driver: bridge
+  frontend-net:
+    driver: bridge
+
+volumes:
+  mongo-data:
+    driver: local

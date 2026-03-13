@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Environment files (contain secrets — never commit these)
+.env
+.env.local
+.env.*.local
+.env.staging
+.env.production
+
+# Build output
+frontend/dist/
+backend/dist/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Docker
+.vite/

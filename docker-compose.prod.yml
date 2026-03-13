@@ -1,0 +1,42 @@
+# Production overrides for docker-compose.yml
+# Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# Note: Docker Compose merges ports (additive). In production, the frontend
+# will be available on both port 3000 (from base) and port 80 (from prod).
+# Use a reverse proxy (e.g., Nginx/Caddy on host) in front of port 80 for TLS.
+
+services:
+  mongo:
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USER:-admin}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD:?MONGO_ROOT_PASSWORD is required}
+      - MONGO_INITDB_DATABASE=books
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  backend:
+    restart: always
+    environment:
+      - PORT=5001
+      - NODE_ENV=production
+      - MONGO_URI=mongodb://${MONGO_ROOT_USER:-admin}:${MONGO_ROOT_PASSWORD:?MONGO_ROOT_PASSWORD is required}@mongo:27017/books?authSource=admin
+      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:3000}
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  frontend:
+    restart: always
+    ports:
+      - "80:80"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
