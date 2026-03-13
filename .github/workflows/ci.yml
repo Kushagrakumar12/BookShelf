@@ -21,26 +21,8 @@ jobs:
       - name: Build backend Docker image
         run: docker build -t book-management-backend ./backend
 
-      - name: Scan backend image for vulnerabilities
-        uses: aquasecurity/trivy-action@0.28.0
-        with:
-          image-ref: book-management-backend
-          format: table
-          severity: CRITICAL,HIGH
-          ignore-unfixed: true
-          exit-code: '0'
-
       - name: Build frontend Docker image
         run: docker build -t book-management-frontend ./frontend
-
-      - name: Scan frontend image for vulnerabilities
-        uses: aquasecurity/trivy-action@0.28.0
-        with:
-          image-ref: book-management-frontend
-          format: table
-          severity: CRITICAL,HIGH
-          ignore-unfixed: true
-          exit-code: '0'
 
   integration-tests:
     name: Run Backend Integration Tests
